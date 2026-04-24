@@ -5,7 +5,15 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>sqlite-ui</title>
-    <meta http-equiv="Content-Security-Policy" script-src 'nonce-{{nonce}}'" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'none';
+        img-src https: data:;
+        style-src 'unsafe-inline' vscode-resource:;
+        script-src 'unsafe-inline' vscode-resource:;
+    "
+    />
   </head>
   <body>
     <div id="root"></div>

@@ -14,8 +14,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "run-your-sqlite.helloWorld",
-        "title": "Hello World"
+        "command": "run-your-sqlite.openUI",
+        "title": "Run Your Sqlite"
       }
     ]
   },
