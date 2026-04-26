@@ -1,26 +1,52 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
-
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+import * as vscode from "vscode";
+import * as fs from "fs";
+import path from "path";
 export function activate(context: vscode.ExtensionContext) {
+  const basePath = vscode.Uri.joinPath(context.extensionUri, "src", "web");
+  const distPath = vscode.Uri.joinPath(basePath, "dist");
+  const files = fs.readdirSync(distPath.fsPath);
+  const cssFile = files.find((e: any) => e.endsWith(".css")) ?? "index.css";
+  const jsFile = files.find((e: any) => e.endsWith(".js")) ?? "index.js";
+  const htmlPath = vscode.Uri.joinPath(distPath, "index.html");
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "run-your-sqlite" is now active!');
+  const disposable = vscode.commands.registerCommand(
+    "run-your-sqlite.helloWorld",
+    () => {
+      const panel = vscode.window.createWebviewPanel(
+        "run-sqlite.dashboard",
+        "Run Your Sqlite",
+        vscode.ViewColumn.One,
+        {
+          enableScripts: true,
+          localResourceRoots: [
+            vscode.Uri.joinPath(context.extensionUri, "src", "web", "dist"),
+          ],
+        },
+      );
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('run-your-sqlite.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from run-your-sqlite!');
-	});
+      const cssUri = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(basePath, "dist", cssFile.toString()),
+      );
+      const jsUri = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(basePath, "dist", jsFile.toString()),
+      );
 
-	context.subscriptions.push(disposable);
+      let html: string = fs.readFileSync(htmlPath.fsPath, "utf-8");
+      html = html.replace(/"(.*?)"/g, (match, p1) => {
+        if (p1.endsWith(".js") || p1.endsWith(".css")) {
+          const uri = panel.webview.asWebviewUri(
+            vscode.Uri.joinPath(distPath, p1),
+          );
+          return `"${uri}"`;
+        }
+        return match;
+      });
+      console.log(cssUri.toString());
+      console.log(jsUri.toString());
+      panel.webview.html = html;
+    },
+  );
+
+  context.subscriptions.push(disposable);
 }
-
-// This method is called when your extension is deactivated
 export function deactivate() {}
